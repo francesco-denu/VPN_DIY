@@ -1,4 +1,4 @@
-**VIRTUAL PRIVATE NETWORK**
+# VIRTUAL PRIVATE NETWORK
 
 Per spiegare l'utilità delle VPN è necessario distinguere una rete
 privata in cui gli host si "fidano a vicenda" da una rete pubblica in
