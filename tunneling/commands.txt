@@ -1,0 +1,65 @@
+----------> VPN:
+
+----> BYPASS INGRESS
+
+CLIENT HOME
+
+ssh -w 0:0 root@192.168.60.5 -o "PermitLocalCommand=yes" -o "LocalCommand=ip addr add 192.168.53.88/24 dev tun0 && ip link set tun0 up" -o "RemoteCommand=ip addr add 192.168.53.99/24 dev tun0 && ip link set tun0 up"
+
+ip route replace 192.168.60.0/24 dev tun0
+ip route add 192.168.60.5 via 10.9.0.11 
+
+SERVER APOLLO
+
+iptables -t nat -A POSTROUTING -j MASQUERADE -o eth0 
+
+oppure aggiugniamo la route per cio che deve andare al server a tutti gli host... ma cosi un comando per tutti
+
+
+----> BYPASS EGRESS
+
+CLIENT APOLLO 
+
+ssh -w 0:0 root@10.9.0.5 -o "PermitLocalCommand=yes" -o "LocalCommand=ip addr add 192.168.53.88/24 dev tun0 && ip link set tun0 up" -o "RemoteCommand=ip addr add 192.168.53.99/24 dev tun0 && ip link set tun0 up"
+
+ip route add 93.184.216.0/24 dev tun0
+
+(per tutti gli altri host: ip route add 93.184.216.0/24 via 192.168.60.5 )
+
+SERVER HOME
+
+iptables -t nat -A POSTROUTING -j MASQUERADE -o eth0
+
+
+
+----------> PORT FORWARDING:
+
+----> BYPASS INGRESS 
+
+
+CLIENT HOME
+ssh -4NT -L 6666:192.168.60.6:9999 root@192.168.60.5
+nc localhost 6666
+
+ON WORK .6
+nc -l 9999
+
+----> BYPASS EGRESS
+
+CLIENT APOLLO
+
+ssh -4NT -L 0.0.0.0:8000:www.example.com:80 root@10.9.0.5
+
+curl --proxy 192.168.60.5:8000 www.example.com  
+
+
+-----> dynamic port forwarding
+
+CLIENT APOLLO
+
+ssh -4NT -D 9000 root@10.9.0.5
+
+curl --proxy socks5h://localhost:9000 https://www.google.com
+curl --proxy socks5h://localhost:9000 https://www.example.com
+
+
